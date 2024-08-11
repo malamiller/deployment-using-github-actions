@@ -1,4 +1,4 @@
-name: Build
+name: Build and Deploy
 
 on:
   push:
@@ -42,6 +42,11 @@ jobs:
     needs: build
     runs-on: [self-hosted]
     steps:
+      - name: Stop and remove existing container
+        run: |
+          docker stop swiggy-clone || true
+          docker rm swiggy-clone || true
+
       - name: docker pull image
         run: docker pull emmabongo/swiggy-clone:latest
 
@@ -50,9 +55,3 @@ jobs:
 
       - name: Deploy to container
         run: docker run -d --name swiggy-clone -p 3000:3000 emmabongo/swiggy-clone:latest
-      
-      - name: Update kubeconfig
-        run: aws eks --region us-east-1 update-kubeconfig --name EKS_CLOUD
-      
-      - name: Deploy to kubernetes
-        run: kubectl apply -f deployment-service.yml
