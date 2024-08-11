@@ -36,3 +36,14 @@ jobs:
           
         env:
           DOCKER_CLI_ACI: 1
+          
+deploy:
+   needs: build
+   runs-on: [self-hosted]
+   steps:
+      - name: docker pull image
+        run: docker pull emmabongo/swiggy-clone:latest
+      - name: Image scan
+        run: trivy image emmabongo/swiggy-clone:latest > trivyimagedeploy.txt
+      - name: Deploy to container
+        run: docker run -d --name swiggy-clone -p 3000:3000 emmabongo/swiggy-clone:latest
