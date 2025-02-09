@@ -62,10 +62,10 @@ jobs:
         run: docker run -d --name swiggy-main --restart unless-stopped -p 3000:3000 emmabongo/swiggy-main:latest
 
       - name: Update kubeconfig
-        run: aws eks --region us-east-1 update-kubeconfig --name EKS_CLOUD
+        run: aws eks --region ap-south-1 update-kubeconfig --name EKS_CLOUD
 
       - name: Verify Kubernetes Context
         run: kubectl config current-context
 
       - name: Deploy to Kubernetes
-        run: kubectl apply -f deployment-service.yml -n my-namespace  # Replace with actual namespace
+        run: kubectl apply -f deployment-service.yml2  # Replace with actual namespace
