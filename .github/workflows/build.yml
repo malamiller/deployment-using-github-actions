@@ -5,22 +5,33 @@ on:
     branches:
       - master
 
-
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted]
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0  # Ensure full history for better SonarQube analysis
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18  # Set your project's Node.js version
+
+      - name: Install Dependencies
+        run: npm ci
+
       - uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      # If you wish to fail your job when the Quality Gate is red, uncomment the
-      # following lines. This would typically be used to fail a deployment.
-      # - uses: sonarsource/sonarqube-quality-gate-action@master
-      #   timeout-minutes: 5
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Docker Login
+        run: echo "${{ secrets.Dockerhub_token }}" | docker login -u "${{ secrets.Dockerhub_username }}" --password-stdin
+
+      - name: Docker Build and Push
+        run: |
+          docker build -t swiggy-main .
+          docker tag swiggy-clone emmabongo/swiggy-main:latest
+          docker push emmabongo/swiggy-main:latest
