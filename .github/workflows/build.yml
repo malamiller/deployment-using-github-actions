@@ -52,11 +52,20 @@ jobs:
           name: trivy-image-scan
           path: trivyimagedeploy.txt
 
+      - name: Stop and Remove Existing Container (if any)
+        run: |
+          if [ "$(docker ps -aq -f name=swiggy-main)" ]; then
+            docker stop swiggy-main && docker rm swiggy-main
+          fi
+
       - name: Deploy to Container
         run: docker run -d --name swiggy-main --restart unless-stopped -p 3000:3000 emmabongo/swiggy-main:latest
 
       - name: Update kubeconfig
         run: aws eks --region us-east-1 update-kubeconfig --name EKS_CLOUD
-        
-      - name: Deploy to kubernetes
-        run: kubectl apply -f deployment-service.yml2. commit the changes and this will deploy the image locally on the base server
+
+      - name: Verify Kubernetes Context
+        run: kubectl config current-context
+
+      - name: Deploy to Kubernetes
+        run: kubectl apply -f deployment-service.yml -n my-namespace  # Replace with actual namespace
