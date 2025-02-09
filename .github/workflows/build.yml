@@ -35,3 +35,22 @@ jobs:
           docker build -t swiggy-main .
           docker tag swiggy-main emmabongo/swiggy-main:latest
           docker push emmabongo/swiggy-main:latest
+
+  deploy:
+    needs: build
+    runs-on: [self-hosted]
+    steps:
+      - name: Pull Docker Image
+        run: docker pull emmabongo/swiggy-main:latest
+
+      - name: Scan Image for Vulnerabilities
+        run: trivy image emmabongo/swiggy-main:latest > trivyimagedeploy.txt
+
+      - name: Upload Trivy Scan Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: trivy-image-scan
+          path: trivyimagedeploy.txt
+
+      - name: Deploy to Container
+        run: docker run -d --name swiggy-main --restart unless-stopped -p 3000:3000 emmabongo/swiggy-main:latest
